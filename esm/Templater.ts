@@ -8,32 +8,20 @@ import {
 	MFunction,
 	MString,
 	MTuple,
-	MTypes,
-} from "#mjljm/effect-lib";
-import {
-	Array,
-	Cause,
-	Either,
-	Function,
-	Option,
-	Order,
-	String,
-	Tuple,
-	pipe,
-} from "effect";
-import { flow } from "effect/Function";
+	MTypes
+} from '#parischap/effect-lib';
+import { Array, Cause, Either, Function, Option, Order, String, Tuple, pipe } from 'effect';
+import { flow } from 'effect/Function';
 
-const moduleTag = "@mjljm/effect-lib/Template/";
+const moduleTag = '@parischap/effect-lib/Template/';
 /**
  * During compilation, a template is split at the boundary of each target. So if there are n targets in the template, we have, after compilation, an array of n blocks, each block containing the text between the end of the previous target (or the start of the template if there is no previous target) and the start of the current one, and the index, in targets, of the current target. There remains a final text after the last target. Note: the static text of the first block and finalStaticText may be empty strings.
  * @category models
  */
 export type Type<T extends ReadonlyArray<string>> = readonly [
-	textAndTargetArray: ReadonlyArray<
-		readonly [staticText: string, targetIndex: number]
-	>,
+	textAndTargetArray: ReadonlyArray<readonly [staticText: string, targetIndex: number]>,
 	finalStaticText: string,
-	targets: T,
+	targets: T
 ];
 
 /**
@@ -44,7 +32,7 @@ export type Type<T extends ReadonlyArray<string>> = readonly [
  */
 export const make = <const T extends ReadonlyArray<string>>(
 	template: string,
-	targets: T,
+	targets: T
 ): Type<T> =>
 	pipe(
 		targets,
@@ -54,34 +42,26 @@ export const make = <const T extends ReadonlyArray<string>>(
 		Array.sort(
 			Order.mapInput(
 				MString.searchResultByStartIndexAndReverseEndIndex,
-				([_, sR]: readonly [number, MString.SearchResult]) => sR,
-			),
+				([_, sR]: readonly [number, MString.SearchResult]) => sR
+			)
 		),
 		Array.chop((indexedSearchResults) => {
 			const head = Array.headNonEmpty(indexedSearchResults);
 			const [_, { endIndex: upperBound }] = head;
 			return Tuple.make(
 				head,
-				Array.dropWhile(
-					indexedSearchResults,
-					([_, { startIndex }]) => startIndex < upperBound,
-				),
+				Array.dropWhile(indexedSearchResults, ([_, { startIndex }]) => startIndex < upperBound)
 			);
 		}),
-		Array.mapAccum(
-			0,
-			(startPos, [targetIndex, { startIndex: endPos, endIndex }]) =>
-				Tuple.make(
-					endIndex,
-					Tuple.make(template.substring(startPos, endPos), targetIndex),
-				),
+		Array.mapAccum(0, (startPos, [targetIndex, { startIndex: endPos, endIndex }]) =>
+			Tuple.make(endIndex, Tuple.make(template.substring(startPos, endPos), targetIndex))
 		),
 		Tuple.mapBoth({
 			onFirst: Function.flip(String.substring)(template),
-			onSecond: Function.identity,
+			onSecond: Function.identity
 		}),
 		Tuple.swap,
-		Tuple.appendElement(targets),
+		Tuple.appendElement(targets)
 	);
 
 /**
@@ -102,17 +82,17 @@ export const write =
 								onFirst: Function.identity,
 								onSecond: flow(
 									MFunction.flipDual(Array.get<string>)(targetValues),
-									Option.getOrElse(() => ""),
-								),
+									Option.getOrElse(() => '')
+								)
 							}),
-							Array.join(""),
-						),
+							Array.join('')
+						)
 					),
-					Array.join(""),
+					Array.join('')
 				),
-				onSecond: Function.identity,
+				onSecond: Function.identity
 			}),
-			Array.join(""),
+			Array.join('')
 		);
 
 /**
@@ -123,9 +103,9 @@ export const write =
 
 export const read = <const T extends ReadonlyArray<string>>(
 	self: Type<T>,
-	targetPatterns: MTypes.ToTupleOf<T, RegExp>,
+	targetPatterns: MTypes.ToTupleOf<T, RegExp>
 ): ((
-	filledOutTemplate: string,
+	filledOutTemplate: string
 ) => Either.Either<
 	MTypes.ToTupleOf<T, Option.Option<string>>,
 	MBadArgumentError.BadFormat | MBadArgumentError.TooMany<string>
@@ -141,10 +121,10 @@ export const read = <const T extends ReadonlyArray<string>>(
 				pipe(
 					targetPatterns,
 					Array.get(targetIndex),
-					Either.fromOption(() => new Cause.NoSuchElementException()),
-				),
-			),
-		),
+					Either.fromOption(() => new Cause.NoSuchElementException())
+				)
+			)
+		)
 	);
 
 	return (filledOutTemplate) =>
@@ -152,15 +132,8 @@ export const read = <const T extends ReadonlyArray<string>>(
 			const [afterAllTargets, values] = yield* pipe(
 				textAndPatternArray,
 				Array.mapAccum(
-					Either.right(filledOutTemplate) as Either.Either<
-						string,
-						MBadArgumentError.BadFormat
-					>,
-					(
-						leftToReadEither,
-						[staticText, targetIndex, targetPattern],
-						position,
-					) =>
+					Either.right(filledOutTemplate) as Either.Either<string, MBadArgumentError.BadFormat>,
+					(leftToReadEither, [staticText, targetIndex, targetPattern], position) =>
 						pipe(
 							Either.gen(function* () {
 								const leftToRead = yield* pipe(leftToReadEither);
@@ -171,14 +144,14 @@ export const read = <const T extends ReadonlyArray<string>>(
 									Tuple.mapBoth({
 										onFirst: MBadArgumentError.BadFormat.check({
 											expected: staticText,
-											id: "filledOutTemplate",
+											id: 'filledOutTemplate',
 											positions: [position],
 											moduleTag,
-											functionName: "read",
+											functionName: 'read'
 										}),
-										onSecond: Either.right,
+										onSecond: Either.right
 									}),
-									Either.all,
+									Either.all
 								);
 
 								const targetValue = yield* pipe(
@@ -188,48 +161,41 @@ export const read = <const T extends ReadonlyArray<string>>(
 											strippedOfStaticText,
 											MBadArgumentError.BadFormat.extractMatch({
 												expected: pattern,
-												id: "filledOutTemplate",
+												id: 'filledOutTemplate',
 												positions: [position],
 												moduleTag,
-												functionName: "read",
-											}),
-										),
+												functionName: 'read'
+											})
+										)
 									),
-									MEither.optionFromOptional,
+									MEither.optionFromOptional
 								);
 								const strippedOfTargetValue = pipe(
 									targetValue,
 									Option.map(
-										flow(
-											String.length,
-											String.substring,
-											Function.apply(strippedOfStaticText),
-										),
+										flow(String.length, String.substring, Function.apply(strippedOfStaticText))
 									),
-									Option.getOrElse(() => strippedOfStaticText),
+									Option.getOrElse(() => strippedOfStaticText)
 								);
 
-								return Tuple.make(
-									strippedOfTargetValue,
-									Tuple.make(targetIndex, targetValue),
-								);
+								return Tuple.make(strippedOfTargetValue, Tuple.make(targetIndex, targetValue));
 							}),
-							MEither.traversePair,
-						),
+							MEither.traversePair
+						)
 				),
 				Tuple.mapSecond(Either.all),
-				Either.all,
+				Either.all
 			);
 
 			yield* pipe(
 				afterAllTargets,
 				MBadArgumentError.BadFormat.check({
 					expected: finalStaticText,
-					id: "filledOutTemplate",
+					id: 'filledOutTemplate',
 					positions: [textAndTargetArray.length],
 					moduleTag,
-					functionName: "read",
-				}),
+					functionName: 'read'
+				})
 			);
 
 			const result = yield* pipe(
@@ -237,7 +203,7 @@ export const read = <const T extends ReadonlyArray<string>>(
 				MArray.groupByNum({
 					size: targets.length,
 					fKey: Tuple.getFirst,
-					fValue: Tuple.getSecond,
+					fValue: Tuple.getSecond
 				}),
 				Array.map((valuesByTarget, position) =>
 					pipe(
@@ -254,24 +220,19 @@ export const read = <const T extends ReadonlyArray<string>>(
 											id: pipe(targets, MArray.unsafeGet(position)),
 											positions: pipe(
 												values,
-												MArray.findAll(
-													flow(
-														Tuple.getFirst,
-														MFunction.strictEquals(position),
-													),
-												),
+												MArray.findAll(flow(Tuple.getFirst, MFunction.strictEquals(position)))
 											),
 											moduleTag,
-											functionName: "read",
-											elements: e,
-										}),
-									),
-							}),
-						),
+											functionName: 'read',
+											elements: e
+										})
+									)
+							})
+						)
 						//MEither.optionFromOptional
-					),
+					)
 				),
-				Either.all,
+				Either.all
 			);
 			return result as MTypes.ToTupleOf<T, Option.Option<string>>;
 		}) as never;

@@ -2,10 +2,10 @@
  * A Formatter pushes the concept of the Templater a step further: instead of reading/writing strings, it will read/write the types you pass it and format them as specified.
  */
 
-import { MTypes } from "#mjljm/effect-lib";
-import * as Format from "#src/Format";
-import * as Templater from "#src/Templater";
-import { Array, Tuple } from "effect";
+import { MTypes } from '#parischap/effect-lib';
+import * as Format from '#project/Format';
+import * as Templater from '#project/Templater';
+import { Array, Tuple } from 'effect';
 
 /**
  * @category models
@@ -17,7 +17,7 @@ type TargetAndFormat = readonly [target: string, format: Format.Type];
  */
 export type Type<T extends ReadonlyArray<TargetAndFormat>> = readonly [
 	templater: Templater.Type<MTypes.ToTupleOf<T, string>>,
-	targetsAndFormats: T,
+	targetsAndFormats: T
 ];
 
 /**
@@ -28,14 +28,13 @@ export type Type<T extends ReadonlyArray<TargetAndFormat>> = readonly [
  */
 export const make = <const T extends ReadonlyArray<TargetAndFormat>>(
 	template: string,
-	targetsAndFormats: T,
+	targetsAndFormats: T
 ): Type<T> =>
 	Tuple.make(
-		Templater.make(
-			template,
-			Array.map(targetsAndFormats, Tuple.getFirst),
-		) as Templater.Type<MTypes.ToTupleOf<T, string>>,
-		targetsAndFormats,
+		Templater.make(template, Array.map(targetsAndFormats, Tuple.getFirst)) as Templater.Type<
+			MTypes.ToTupleOf<T, string>
+		>,
+		targetsAndFormats
 	);
 
 export const write =

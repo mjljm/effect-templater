@@ -1,16 +1,14 @@
-import { MTypes } from "#mjljm/effect-lib";
-import * as Alignment from "#src/Alignment";
-import { Number } from "effect";
+import { MTypes } from '#parischap/effect-lib';
+import * as Alignment from '#project/Alignment';
+import { Number } from 'effect';
 
-//const moduleTag = '@mjljm/effect-templater/ter/';
+//const moduleTag = '@parischap/effect-templater/ter/';
 
 /**
  * Utility type that transforms a Format into its real world type
  * @category utils
  */
-export type FormatToType<T extends Type> = T extends Int | InternalNumber
-	? number
-	: string;
+export type FormatToType<T extends Type> = T extends Int | InternalNumber ? number : string;
 
 /**
  * A format
@@ -40,10 +38,7 @@ class Int extends Type {
 	 */
 	readonly alignment: Alignment.Type;
 
-	constructor({
-		base = 10,
-		alignment = Alignment.makeNone(),
-	}: MTypes.PartialData<Int> = {}) {
+	constructor({ base = 10, alignment = Alignment.makeNone() }: MTypes.PartialData<Int> = {}) {
 		super();
 		this.base = Number.clamp(base, { minimum: 2, maximum: 36 });
 		this.alignment = alignment;
@@ -53,8 +48,7 @@ export { type Int };
 /**
  * @category constructors
  */
-export const makeInt = (params: MTypes.PartialData<Int> = {}): Int =>
-	new Int(params);
+export const makeInt = (params: MTypes.PartialData<Int> = {}): Int => new Int(params);
 
 /**
  * An object that contains the parameters used to format a real number
@@ -82,7 +76,7 @@ class InternalNumber extends Type {
 	constructor({
 		digits = 2,
 		exponentialNotation = false,
-		alignment = Alignment.makeNone(),
+		alignment = Alignment.makeNone()
 	}: MTypes.PartialData<InternalNumber> = {}) {
 		super();
 		this.digits = Number.clamp(digits, { minimum: 0, maximum: 100 });
@@ -95,9 +89,8 @@ export { type InternalNumber as Number };
 /**
  * @category constructors
  */
-export const makeNumber = (
-	params: MTypes.PartialData<InternalNumber> = {},
-): InternalNumber => new InternalNumber(params);
+export const makeNumber = (params: MTypes.PartialData<InternalNumber> = {}): InternalNumber =>
+	new InternalNumber(params);
 
 /**
  * An object that contains the parameters used to format a string
@@ -110,9 +103,7 @@ class InternalString extends Type {
 	 */
 	readonly alignment: Alignment.Type;
 
-	constructor({
-		alignment = Alignment.makeNone(),
-	}: MTypes.PartialData<InternalString>) {
+	constructor({ alignment = Alignment.makeNone() }: MTypes.PartialData<InternalString>) {
 		super();
 		this.alignment = alignment;
 	}
@@ -122,6 +113,5 @@ export { type InternalString as String };
 /**
  * @category constructors
  */
-export const makeString = (
-	params: MTypes.PartialData<InternalString> = {},
-): InternalString => new InternalString(params);
+export const makeString = (params: MTypes.PartialData<InternalString> = {}): InternalString =>
+	new InternalString(params);

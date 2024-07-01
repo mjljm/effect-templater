@@ -1,5 +1,5 @@
-import { MTypes } from "#mjljm/effect-lib";
-import { Number } from "effect";
+import { MTypes } from '#parischap/effect-lib';
+import { Number } from 'effect';
 
 /**
  * An alignment
@@ -62,5 +62,4 @@ export { type Right };
 /**
  * @category constructors
  */
-export const makeRight = (params: MTypes.Data<Right>): Right =>
-	new Right(params);
+export const makeRight = (params: MTypes.Data<Right>): Right => new Right(params);
